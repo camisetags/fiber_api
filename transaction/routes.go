@@ -12,6 +12,32 @@ import (
 	"gorm.io/gorm"
 )
 
+type creationParams struct {
+	Type string
+	Title string
+	Value uint64
+}
+
+func parseCreationParams(ctx *fiber.Ctx) (*creationParams, error) {
+	title := utils.ImmutableString(ctx.Params("title"))
+	paramType := utils.ImmutableString(ctx.Params("type"))
+	value, convertErr := strconv.ParseUint(
+		utils.ImmutableString(ctx.Params("value")), 
+		10, 
+		64,
+	)
+
+	if convertErr != nil {
+		return nil, convertErr
+	}
+	
+	return &creationParams{
+		Type: paramType,
+		Value: value,
+		Title: title,
+	}, nil
+}
+
 // Routes routes to handle user actions
 func Routes(app *fiber.App, db *gorm.DB) {
 	group := app.Group("transactions")
@@ -24,13 +50,7 @@ func Routes(app *fiber.App, db *gorm.DB) {
 	})
 
 	group.Post("/", func(ctx *fiber.Ctx) {
-		title := utils.ImmutableString(ctx.Params("title"))
-		paramType := utils.ImmutableString(ctx.Params("type"))
-		value, convertErr := strconv.ParseUint(
-			utils.ImmutableString(ctx.Params("value")), 
-			10, 
-			64,
-		)
+		params, convertErr := parseCreationParams(ctx)
 
 		if convertErr != nil {
 			ctx.
@@ -47,9 +67,9 @@ func Routes(app *fiber.App, db *gorm.DB) {
 		}
 		createdTransaction, creationErr := service.Execute(services.CreateTransactionDTO{
 			Transaction: models.Transaction{
-				Name: title,
-				Value: value,
-				Type: paramType,
+				Name: params.Title,
+				Value: params.Value,
+				Type: params.Type,
 			},
 		})
 
@@ -57,7 +77,7 @@ func Routes(app *fiber.App, db *gorm.DB) {
 			ctx.
 				Status(400).
 				JSON(fiber.Map{
-					"error": "INVALID_TRANSACTION_TYPE",
+					"error": "CREATION_ERROR",
 					"message": creationErr.Error(),
 				})
 			return
