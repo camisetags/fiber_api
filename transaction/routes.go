@@ -1,16 +1,11 @@
 package transaction
 
 import (
-	// "fmt"
-	
 	"fiber_api/transaction/models"
 	"fiber_api/transaction/repositories"
 	"fiber_api/transaction/services"
 
-	// "strconv"
-
 	"github.com/gofiber/fiber"
-	// "github.com/gofiber/utils"
 	"gorm.io/gorm"
 )
 
@@ -30,12 +25,11 @@ func parseCreationParams(ctx *fiber.Ctx) (*creationParams, error) {
 }
 
 // Routes routes to handle user actions
-func Routes(app *fiber.App, db *gorm.DB) {
-	group := app.Group("transactions")
+func Routes(router fiber.Router, db *gorm.DB) {
 	transactionRepo := repositories.TransactionRepository{}.
 		SetConnection(db)
 
-	group.Get("/", func(ctx *fiber.Ctx) {
+	router.Get("/", func(ctx *fiber.Ctx) {
 		var transactions []fiber.Map
 
 		for _, transaction := range transactionRepo.All() {
@@ -53,7 +47,7 @@ func Routes(app *fiber.App, db *gorm.DB) {
 		})
 	})
 
-	group.Post("/", func(ctx *fiber.Ctx) {
+	router.Post("/", func(ctx *fiber.Ctx) {
 		params, convertErr := parseCreationParams(ctx)
 		if convertErr != nil {
 			ctx.

@@ -10,7 +10,7 @@ func main() {
 	app := app.New()
 	db := database.New()
 
-	transaction.Routes(app, db)
+	transaction.Routes(app.Group("transactions"), db)
 
 	app.Listen(3333)
 }

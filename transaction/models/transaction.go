@@ -3,12 +3,13 @@ package models
 import (
 	"time"
 	"gorm.io/gorm"
+	"github.com/satori/go.uuid"
 )
 
 // Transaction model
 type Transaction struct {
 	gorm.Model
-	ID			uint		`gorm:"primaryKey" json:"id"`
+	ID        	uuid.UUID `gorm:"type:uuid;primary_key;"`
 	Name  		string 		`json:"name"`
 	Type 		string		`json:"type"`
 	Value		uint64		`json:"value"`

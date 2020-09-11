@@ -3,6 +3,7 @@ package repositories
 import (
 	"fiber_api/transaction/models"
 	
+	"github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	sq "github.com/Masterminds/squirrel"
 )
@@ -58,6 +59,7 @@ func (t TransactionRepository) All() []models.Transaction {
 
 // Create will create and returns the created transaction
 func (t TransactionRepository) Create(trans *models.Transaction) (*models.Transaction, error) {
+	trans.ID = uuid.NewV4()
 	result := t.getConnection().Create(trans)
 
 	if result.Error != nil {
