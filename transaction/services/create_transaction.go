@@ -18,7 +18,7 @@ type CreateTransactionService struct{
 
 func (c *CreateTransactionService) checksValidBalance(newTransaction models.Transaction) bool {
 	balance := c.Repo.GetBalance()
-	return balance.Total <= newTransaction.Value
+	return balance.Total >= newTransaction.Value
 }
 
 // Execute will execute the domain logic of CreateTransactionService
@@ -33,7 +33,6 @@ func (c CreateTransactionService) Execute(newTransaction models.Transaction) (*m
 	}
 
 	createdTransaction, err := c.Repo.Create(&newTransaction)
-
 	if err != nil {
 		return nil, err
 	}
