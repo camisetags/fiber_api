@@ -32,11 +32,25 @@ func parseCreationParams(ctx *fiber.Ctx) (*creationParams, error) {
 // Routes routes to handle user actions
 func Routes(app *fiber.App, db *gorm.DB) {
 	group := app.Group("transactions")
-	transactionRepo := repositories.TransactionRepository{}
+	transactionRepo := repositories.TransactionRepository{}.
+		SetConnection(db)
 
 	group.Get("/", func(ctx *fiber.Ctx) {
-		transactions := transactionRepo.All()
-		ctx.Status(200).JSON(transactions)
+		var transactions []fiber.Map
+
+		for _, transaction := range transactionRepo.All() {
+			transactions = append(transactions, fiber.Map{
+				"id": transaction.ID,
+				"name": transaction.Name,
+				"type": transaction.Type,
+				"value": transaction.Value,
+			})
+		}
+
+		ctx.Status(200).JSON(fiber.Map{
+			"transactions": transactions,
+			"balance": transactionRepo.GetBalance(),
+		})
 	})
 
 	group.Post("/", func(ctx *fiber.Ctx) {
@@ -51,14 +65,15 @@ func Routes(app *fiber.App, db *gorm.DB) {
 			return
 		}
 		
-		service := services.CreateTransactionService{Repo: transactionRepo}
-		createdTransaction, creationErr := service.Execute(services.CreateTransactionDTO{
-			Transaction: models.Transaction{
-				Name:  params.Title,
-				Value: params.Value,
-				Type:  params.Type,
-			},
-		})
+		service := services.CreateTransactionService{
+			Repo: transactionRepo,
+		}
+		newTransaction := models.Transaction{
+			Name:  params.Title,
+			Value: params.Value,
+			Type:  params.Type,
+		}
+		createdTransaction, creationErr := service.Execute(newTransaction)
 
 		if creationErr != nil {
 			ctx.
@@ -72,6 +87,11 @@ func Routes(app *fiber.App, db *gorm.DB) {
 
 		ctx.
 			Status(200).
-			JSON(*createdTransaction)
+			JSON(fiber.Map{
+				"id": createdTransaction.ID,
+				"name": createdTransaction.Name,
+				"type": createdTransaction.Type,
+				"value": createdTransaction.Value,
+			})
 	})
 }

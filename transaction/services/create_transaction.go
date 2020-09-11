@@ -16,28 +16,23 @@ type CreateTransactionService struct{
 	Repo IRepository
 }
 
-// CreateTransactionDTO params to create transaction service
-type CreateTransactionDTO struct {
-	Transaction models.Transaction
-}
-
-func (c CreateTransactionService) checksValidBalance(newTransaction models.Transaction) bool {
+func (c *CreateTransactionService) checksValidBalance(newTransaction models.Transaction) bool {
 	balance := c.Repo.GetBalance()
 	return balance.Total <= newTransaction.Value
 }
 
 // Execute will execute the domain logic of CreateTransactionService
-func (c CreateTransactionService) Execute(param CreateTransactionDTO) (*models.Transaction, error) {
-	transactType := param.Transaction.Type
+func (c CreateTransactionService) Execute(newTransaction models.Transaction) (*models.Transaction, error) {
+	transactType := newTransaction.Type
 	if transactType != "income" && transactType != "outcome" {
 		return nil, errors.New("Cannot create transaction type different fom income or outcome")
 	}
 
-	if transactType == "outcome" && !c.checksValidBalance(param.Transaction) {
+	if transactType == "outcome" && !c.checksValidBalance(newTransaction) {
 		return nil, errors.New("Cannot create transaction with invalid balance")
 	}
 
-	createdTransaction, err := c.Repo.Create(&param.Transaction)
+	createdTransaction, err := c.Repo.Create(&newTransaction)
 
 	if err != nil {
 		return nil, err
