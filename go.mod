@@ -3,6 +3,7 @@ module fiber_api
 go 1.15
 
 require (
+	github.com/Masterminds/squirrel v1.4.0
 	github.com/gofiber/fiber v1.14.5
 	github.com/gofiber/utils v0.0.10
 	github.com/gorilla/schema v1.2.0 // indirect

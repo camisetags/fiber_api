@@ -1,41 +1,32 @@
 package transaction
 
 import (
+	// "fmt"
+	
 	"fiber_api/transaction/models"
 	"fiber_api/transaction/repositories"
 	"fiber_api/transaction/services"
 
-	"strconv"
+	// "strconv"
 
 	"github.com/gofiber/fiber"
-	"github.com/gofiber/utils"
+	// "github.com/gofiber/utils"
 	"gorm.io/gorm"
 )
 
 type creationParams struct {
-	Type  string
-	Title string
-	Value uint64
+	Type  string `json:"type"`
+	Title string `json:"title"`
+	Value uint64 `json:"value"`
 }
 
 func parseCreationParams(ctx *fiber.Ctx) (*creationParams, error) {
-	title := utils.ImmutableString(ctx.Params("title"))
-	paramType := utils.ImmutableString(ctx.Params("type"))
-	value, convertErr := strconv.ParseUint(
-		utils.ImmutableString(ctx.Params("value")),
-		10,
-		64,
-	)
-
-	if convertErr != nil {
-		return nil, convertErr
+	params := new(creationParams)
+	if err := ctx.BodyParser(params); err != nil {
+		return nil, err
 	}
 
-	return &creationParams{
-		Type:  paramType,
-		Value: value,
-		Title: title,
-	}, nil
+	return params, nil
 }
 
 // Routes routes to handle user actions
@@ -50,7 +41,6 @@ func Routes(app *fiber.App, db *gorm.DB) {
 
 	group.Post("/", func(ctx *fiber.Ctx) {
 		params, convertErr := parseCreationParams(ctx)
-
 		if convertErr != nil {
 			ctx.
 				Status(400).
@@ -60,7 +50,7 @@ func Routes(app *fiber.App, db *gorm.DB) {
 				})
 			return
 		}
-
+		
 		service := services.CreateTransactionService{Repo: transactionRepo}
 		createdTransaction, creationErr := service.Execute(services.CreateTransactionDTO{
 			Transaction: models.Transaction{
@@ -82,6 +72,6 @@ func Routes(app *fiber.App, db *gorm.DB) {
 
 		ctx.
 			Status(200).
-			JSON(createdTransaction)
+			JSON(*createdTransaction)
 	})
 }

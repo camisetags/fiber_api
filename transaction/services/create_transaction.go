@@ -7,7 +7,8 @@ import (
 
 // IRepository to receive something like repo interface
 type IRepository interface {
-	Create(trans models.Transaction) (*models.Transaction, error)
+	Create(trans *models.Transaction) (*models.Transaction, error)
+	GetBalance() models.Balance
 }
 
 // CreateTransactionService will handle the domain logic to create transaction
@@ -20,14 +21,23 @@ type CreateTransactionDTO struct {
 	Transaction models.Transaction
 }
 
+func (c CreateTransactionService) checksValidBalance(newTransaction models.Transaction) bool {
+	balance := c.Repo.GetBalance()
+	return balance.Total <= newTransaction.Value
+}
+
 // Execute will execute the domain logic of CreateTransactionService
-func (l CreateTransactionService) Execute(param CreateTransactionDTO) (*models.Transaction, error) {
+func (c CreateTransactionService) Execute(param CreateTransactionDTO) (*models.Transaction, error) {
 	transactType := param.Transaction.Type
 	if transactType != "income" && transactType != "outcome" {
 		return nil, errors.New("Cannot create transaction type different fom income or outcome")
 	}
 
-	createdTransaction, err := l.Repo.Create(param.Transaction)
+	if transactType == "outcome" && !c.checksValidBalance(param.Transaction) {
+		return nil, errors.New("Cannot create transaction with invalid balance")
+	}
+
+	createdTransaction, err := c.Repo.Create(&param.Transaction)
 
 	if err != nil {
 		return nil, err
