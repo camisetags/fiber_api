@@ -1,7 +1,6 @@
 package user
 
 import (
-	// "fiber_api/user/models"
 	"fiber_api/user/repositories"
 	"fiber_api/user/services"
 
