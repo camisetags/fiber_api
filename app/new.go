@@ -5,12 +5,6 @@ import (
 	"github.com/gofiber/fiber/middleware"
 )
 
-func pingHandler(ctx *fiber.Ctx) {
-	ctx.JSON(fiber.Map{
-		"ping": "pong",
-	})
-}
-
 // New returns a new instance of app
 func New() *fiber.App {
 	app := fiber.New(&fiber.Settings{
@@ -25,8 +19,6 @@ func New() *fiber.App {
 		ctx.Accepts("application/json")
 		ctx.Next()
 	})
-
-	app.Get("/ping", pingHandler)
 
 	return app
 }
