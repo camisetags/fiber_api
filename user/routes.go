@@ -8,11 +8,10 @@ import (
 	"gorm.io/gorm"
 )
 
-
 type userRegisterParams struct {
-	Name string	`json:"name"`
-	Email string `json:"email"`
-	Password string `json:"password"`
+	Name                 string `json:"name"`
+	Email                string `json:"email"`
+	Password             string `json:"password"`
 	PasswordConfirmation string `json:"password_confirmation"`
 }
 
@@ -23,7 +22,7 @@ func getUserRegisterParams(ctx *fiber.Ctx) (*userRegisterParams, error) {
 	}
 
 	return params, nil
-} 
+}
 
 // Routes routes to handle user actions
 func Routes(router fiber.Router, db *gorm.DB) {
@@ -36,7 +35,7 @@ func Routes(router fiber.Router, db *gorm.DB) {
 		if paramsError != nil {
 			ctx.Status(400).
 				JSON(fiber.Map{
-					"error": "INVALID_PARAMS",
+					"error":   "INVALID_PARAMS",
 					"message": paramsError.Error(),
 				})
 			return
@@ -45,8 +44,8 @@ func Routes(router fiber.Router, db *gorm.DB) {
 		service := services.RegisterUserService{Repo: userRepo}
 		newUser, creationError := service.Execute(
 			services.UserFields{
-				Name: params.Name,
-				Email: params.Email,
+				Name:     params.Name,
+				Email:    params.Email,
 				Password: params.Password,
 			},
 			params.PasswordConfirmation,
@@ -55,7 +54,7 @@ func Routes(router fiber.Router, db *gorm.DB) {
 		if creationError != nil {
 			ctx.Status(400).
 				JSON(fiber.Map{
-					"error": "USER_CREATION",
+					"error":   "USER_CREATION",
 					"message": creationError.Error(),
 				})
 			return
@@ -63,7 +62,7 @@ func Routes(router fiber.Router, db *gorm.DB) {
 
 		ctx.Status(200).
 			JSON(fiber.Map{
-				"name": newUser.Name,
+				"name":  newUser.Name,
 				"email": newUser.Email,
 			})
 	})

@@ -3,7 +3,7 @@ package services
 import (
 	"errors"
 	"fiber_api/user/models"
-	
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -15,13 +15,13 @@ type IRepository interface {
 
 // UserFields basic struct of user to create a new one
 type UserFields struct {
-	Name string
-	Email string
+	Name     string
+	Email    string
 	Password string
 }
 
 // RegisterUserService will handle the domain logic to create transaction
-type RegisterUserService struct{
+type RegisterUserService struct {
 	Repo IRepository
 }
 
@@ -51,14 +51,14 @@ func (c RegisterUserService) Execute(newUser UserFields, passwordConfirm string)
 	if hashErr != nil {
 		return nil, hashErr
 	}
-	
+
 	dbUser := &models.User{
-		Email: newUser.Email,
-		Name: newUser.Name,
+		Email:    newUser.Email,
+		Name:     newUser.Name,
 		Password: hashedPassword,
 	}
 
 	c.Repo.Create(dbUser)
-	
+
 	return dbUser, nil
 }
