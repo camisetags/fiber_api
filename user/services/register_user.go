@@ -25,12 +25,6 @@ type RegisterUserService struct{
 	Repo IRepository
 }
 
-// UserRegisterDTO data access to user register params
-type UserRegisterDTO struct {
-	PasswordConfirmation string
-	NewUser				 UserFields
-}
-
 func generatePasswordHash(password string) (string, error) {
 	passBytes := []byte(password)
 
@@ -43,28 +37,28 @@ func generatePasswordHash(password string) (string, error) {
 }
 
 // Execute will execute the domain logic of CreateTransactionService
-func (c RegisterUserService) Execute(params UserRegisterDTO) (*models.User, error) {
-	if params.PasswordConfirmation != params.NewUser.Password {
+func (c RegisterUserService) Execute(newUser UserFields, passwordConfirm string) (*models.User, error) {
+	if passwordConfirm != newUser.Password {
 		return nil, errors.New("Password is not matching")
 	}
 
-	newEmail := params.NewUser.Email
+	newEmail := newUser.Email
 	if _, err := c.Repo.FindByEmail(newEmail); err == nil {
 		return nil, errors.New("Email already taken")
 	}
 
-	hashedPassword, hashErr := generatePasswordHash(params.NewUser.Password)
+	hashedPassword, hashErr := generatePasswordHash(newUser.Password)
 	if hashErr != nil {
 		return nil, hashErr
 	}
 	
-	newUser := &models.User{
-		Email: params.NewUser.Email,
-		Name: params.NewUser.Name,
+	dbUser := &models.User{
+		Email: newUser.Email,
+		Name: newUser.Name,
 		Password: hashedPassword,
 	}
 
-	c.Repo.Create(newUser)
+	c.Repo.Create(dbUser)
 	
-	return newUser, nil
+	return dbUser, nil
 }

@@ -44,14 +44,14 @@ func Routes(router fiber.Router, db *gorm.DB) {
 		}
 
 		service := services.RegisterUserService{Repo: userRepo}
-		newUser, creationError := service.Execute(services.UserRegisterDTO{
-			NewUser: services.UserFields{
+		newUser, creationError := service.Execute(
+			services.UserFields{
 				Name: params.Name,
 				Email: params.Email,
 				Password: params.Password,
 			},
-			PasswordConfirmation: params.PasswordConfirmation,
-		})
+			params.PasswordConfirmation,
+		)
 
 		if creationError != nil {
 			ctx.Status(400).
