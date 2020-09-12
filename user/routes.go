@@ -3,7 +3,7 @@ package user
 import (
 	// "fiber_api/user/models"
 	"fiber_api/user/repositories"
-	// "fiber_api/user/services"
+	"fiber_api/user/services"
 
 	"github.com/gofiber/fiber"
 	"gorm.io/gorm"
@@ -18,17 +18,17 @@ type userRegisterParams struct {
 }
 
 func getUserRegisterParams(ctx *fiber.Ctx) (*userRegisterParams, error) {
-	var params userRegisterParams
+	params := new(userRegisterParams)
 	if err := ctx.BodyParser(params); err != nil {
 		return nil, err
 	}
 
-	return &params, nil
+	return params, nil
 } 
 
 // Routes routes to handle user actions
 func Routes(router fiber.Router, db *gorm.DB) {
-	transactionRepo := repositories.UserRepoitory{}.
+	userRepo := repositories.UserRepoitory{}.
 		SetConnection(db)
 
 	router.Post("/", func(ctx *fiber.Ctx) {
@@ -40,8 +40,32 @@ func Routes(router fiber.Router, db *gorm.DB) {
 					"error": "INVALID_PARAMS",
 					"message": paramsError.Error(),
 				})
+			return
 		}
 
-		
+		service := services.RegisterUserService{Repo: userRepo}
+		newUser, creationError := service.Execute(services.UserRegisterDTO{
+			NewUser: services.UserFields{
+				Name: params.Name,
+				Email: params.Email,
+				Password: params.Password,
+			},
+			PasswordConfirmation: params.PasswordConfirmation,
+		})
+
+		if creationError != nil {
+			ctx.Status(400).
+				JSON(fiber.Map{
+					"error": "USER_CREATION",
+					"message": creationError.Error(),
+				})
+			return
+		}
+
+		ctx.Status(200).
+			JSON(fiber.Map{
+				"name": newUser.Name,
+				"email": newUser.Email,
+			})
 	})
 }
