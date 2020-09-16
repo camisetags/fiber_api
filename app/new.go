@@ -1,23 +1,23 @@
 package app
 
 import (
-	"github.com/gofiber/fiber"
-	"github.com/gofiber/fiber/middleware"
+	fiber "github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 // New returns a new instance of app
 func New() *fiber.App {
-	app := fiber.New(&fiber.Settings{
+	app := fiber.New(fiber.Config{
 		Prefork:       true,
 		StrictRouting: false,
 		CaseSensitive: true,
 	})
 
-	app.Use(middleware.Recover())
+	app.Use(recover.New())
 
-	app.Use(func(ctx *fiber.Ctx) {
+	app.Use(func(ctx *fiber.Ctx) error {
 		ctx.Accepts("application/json")
-		ctx.Next()
+		return ctx.Next()
 	})
 
 	return app

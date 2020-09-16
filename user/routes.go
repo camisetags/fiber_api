@@ -4,7 +4,7 @@ import (
 	"fiber_api/user/repositories"
 	"fiber_api/user/services"
 
-	"github.com/gofiber/fiber"
+	fiber "github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
@@ -29,16 +29,15 @@ func Routes(router fiber.Router, db *gorm.DB) {
 	userRepo := repositories.UserRepoitory{}.
 		SetConnection(db)
 
-	router.Post("/", func(ctx *fiber.Ctx) {
+	router.Post("/", func(ctx *fiber.Ctx) error {
 		params, paramsError := getUserRegisterParams(ctx)
 
 		if paramsError != nil {
-			ctx.Status(400).
+			return ctx.Status(400).
 				JSON(fiber.Map{
 					"error":   "INVALID_PARAMS",
 					"message": paramsError.Error(),
 				})
-			return
 		}
 
 		service := services.RegisterUserService{Repo: userRepo}
@@ -52,15 +51,14 @@ func Routes(router fiber.Router, db *gorm.DB) {
 		)
 
 		if creationError != nil {
-			ctx.Status(400).
+			return ctx.Status(400).
 				JSON(fiber.Map{
 					"error":   "USER_CREATION",
 					"message": creationError.Error(),
 				})
-			return
 		}
 
-		ctx.Status(200).
+		return ctx.Status(200).
 			JSON(fiber.Map{
 				"name":  newUser.Name,
 				"email": newUser.Email,

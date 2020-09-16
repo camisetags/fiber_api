@@ -5,11 +5,11 @@ import (
 	"fiber_api/user"
 	
 	"gorm.io/gorm"
-	"github.com/gofiber/fiber"
+	fiber "github.com/gofiber/fiber/v2"
 )
 
-func pingHandler(ctx *fiber.Ctx) {
-	ctx.JSON(fiber.Map{
+func pingHandler(ctx *fiber.Ctx) error {
+	return ctx.JSON(fiber.Map{
 		"ping": "pong",
 	})
 }

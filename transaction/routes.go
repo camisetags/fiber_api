@@ -5,7 +5,7 @@ import (
 	"fiber_api/transaction/repositories"
 	"fiber_api/transaction/services"
 
-	"github.com/gofiber/fiber"
+	fiber "github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
@@ -29,7 +29,7 @@ func Routes(router fiber.Router, db *gorm.DB) {
 	transactionRepo := repositories.TransactionRepository{}.
 		SetConnection(db)
 
-	router.Get("/", func(ctx *fiber.Ctx) {
+	router.Get("/", func(ctx *fiber.Ctx) error {
 		var transactions []fiber.Map
 
 		for _, transaction := range transactionRepo.All() {
@@ -41,22 +41,21 @@ func Routes(router fiber.Router, db *gorm.DB) {
 			})
 		}
 
-		ctx.Status(200).JSON(fiber.Map{
+		return ctx.Status(200).JSON(fiber.Map{
 			"transactions": transactions,
 			"balance": transactionRepo.GetBalance(),
 		})
 	})
 
-	router.Post("/", func(ctx *fiber.Ctx) {
+	router.Post("/", func(ctx *fiber.Ctx) error {
 		params, convertErr := parseCreationParams(ctx)
 		if convertErr != nil {
-			ctx.
+			return ctx.
 				Status(400).
 				JSON(fiber.Map{
 					"error":   "CONVERT_ERROR",
 					"message": convertErr.Error(),
 				})
-			return
 		}
 		
 		service := services.CreateTransactionService{
@@ -70,16 +69,15 @@ func Routes(router fiber.Router, db *gorm.DB) {
 		createdTransaction, creationErr := service.Execute(newTransaction)
 
 		if creationErr != nil {
-			ctx.
+			return ctx.
 				Status(400).
 				JSON(fiber.Map{
 					"error":   "CREATION_ERROR",
 					"message": creationErr.Error(),
 				})
-			return
 		}
 
-		ctx.
+		return ctx.
 			Status(200).
 			JSON(fiber.Map{
 				"id": createdTransaction.ID,

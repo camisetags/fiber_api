@@ -10,5 +10,5 @@ func main() {
 	db := database.New()
 	Router(app, db)
 
-	app.Listen(3333)
+	app.Listen("0.0.0.0:3333")
 }
