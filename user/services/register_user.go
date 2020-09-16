@@ -2,15 +2,15 @@ package services
 
 import (
 	"errors"
-	"fiber_api/user/models"
+	"fiber_api/user/entities"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 // IRepository to receive something like repo interface
 type IRepository interface {
-	Create(*models.User) (*models.User, error)
-	FindByEmail(email string) (*models.User, error)
+	Create(*entities.User) (*entities.User, error)
+	FindByEmail(email string) (*entities.User, error)
 }
 
 // UserFields basic struct of user to create a new one
@@ -37,7 +37,7 @@ func generatePasswordHash(password string) (string, error) {
 }
 
 // Execute will execute the domain logic of CreateTransactionService
-func (c RegisterUserService) Execute(newUser UserFields, passwordConfirm string) (*models.User, error) {
+func (c RegisterUserService) Execute(newUser UserFields, passwordConfirm string) (*entities.User, error) {
 	if passwordConfirm != newUser.Password {
 		return nil, errors.New("Password is not matching")
 	}
@@ -52,7 +52,7 @@ func (c RegisterUserService) Execute(newUser UserFields, passwordConfirm string)
 		return nil, hashErr
 	}
 
-	dbUser := &models.User{
+	dbUser := &entities.User{
 		Email:    newUser.Email,
 		Name:     newUser.Name,
 		Password: hashedPassword,

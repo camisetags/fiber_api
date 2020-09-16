@@ -1,11 +1,11 @@
 package repositories
 
 import (
-	"fiber_api/transaction/models"
-	
+	"fiber_api/transaction/entities"
+
+	sq "github.com/Masterminds/squirrel"
 	"github.com/satori/go.uuid"
 	"gorm.io/gorm"
-	sq "github.com/Masterminds/squirrel"
 )
 
 // TransactionRepository repository
@@ -13,9 +13,9 @@ type TransactionRepository struct {
 	connection *gorm.DB
 }
 
-func filterType(transactions []models.Transaction, typee string) []models.Transaction {
-	var filtered []models.Transaction
-	
+func filterType(transactions []entities.Transaction, typee string) []entities.Transaction {
+	var filtered []entities.Transaction
+
 	for _, transaction := range transactions {
 		if transaction.Type == typee {
 			filtered = append(filtered, transaction)
@@ -25,7 +25,7 @@ func filterType(transactions []models.Transaction, typee string) []models.Transa
 	return filtered
 }
 
-func calcTransactionType(transactions []models.Transaction, typee string) uint64 {
+func calcTransactionType(transactions []entities.Transaction, typee string) uint64 {
 	var total uint64
 	filtered := filterType(transactions, typee)
 
@@ -50,15 +50,15 @@ func (t TransactionRepository) getConnection() *gorm.DB {
 }
 
 // All will list all transactions in database
-func (t TransactionRepository) All() []models.Transaction {
-	transactions := []models.Transaction{}
+func (t TransactionRepository) All() []entities.Transaction {
+	transactions := []entities.Transaction{}
 	t.getConnection().Raw(sq.Select("*").From("transactions").ToSql()).Scan(&transactions)
-	
+
 	return transactions
 }
 
 // Create will create and returns the created transaction
-func (t TransactionRepository) Create(trans *models.Transaction) (*models.Transaction, error) {
+func (t TransactionRepository) Create(trans *entities.Transaction) (*entities.Transaction, error) {
 	trans.ID = uuid.NewV4()
 	result := t.getConnection().Create(trans)
 
@@ -70,16 +70,16 @@ func (t TransactionRepository) Create(trans *models.Transaction) (*models.Transa
 }
 
 // GetBalance will calc the balance
-func (t TransactionRepository) GetBalance() models.Balance {
-	transactions := []models.Transaction{}
+func (t TransactionRepository) GetBalance() entities.Balance {
+	transactions := []entities.Transaction{}
 	t.getConnection().Find(&transactions)
 
 	income := calcTransactionType(transactions, "income")
 	outcome := calcTransactionType(transactions, "outcome")
 
-	return models.Balance{
-		Income: income,
+	return entities.Balance{
+		Income:  income,
 		Outcome: outcome,
-		Total: income - outcome,
+		Total:   income - outcome,
 	}
 }

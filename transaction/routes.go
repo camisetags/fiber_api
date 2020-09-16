@@ -1,7 +1,7 @@
 package transaction
 
 import (
-	"fiber_api/transaction/models"
+	"fiber_api/transaction/entities"
 	"fiber_api/transaction/repositories"
 	"fiber_api/transaction/services"
 
@@ -34,16 +34,16 @@ func Routes(router fiber.Router, db *gorm.DB) {
 
 		for _, transaction := range transactionRepo.All() {
 			transactions = append(transactions, fiber.Map{
-				"id": transaction.ID,
-				"name": transaction.Name,
-				"type": transaction.Type,
+				"id":    transaction.ID,
+				"name":  transaction.Name,
+				"type":  transaction.Type,
 				"value": transaction.Value,
 			})
 		}
 
 		return ctx.Status(200).JSON(fiber.Map{
 			"transactions": transactions,
-			"balance": transactionRepo.GetBalance(),
+			"balance":      transactionRepo.GetBalance(),
 		})
 	})
 
@@ -57,11 +57,11 @@ func Routes(router fiber.Router, db *gorm.DB) {
 					"message": convertErr.Error(),
 				})
 		}
-		
+
 		service := services.CreateTransactionService{
 			Repo: transactionRepo,
 		}
-		newTransaction := models.Transaction{
+		newTransaction := entities.Transaction{
 			Name:  params.Title,
 			Value: params.Value,
 			Type:  params.Type,
@@ -80,9 +80,9 @@ func Routes(router fiber.Router, db *gorm.DB) {
 		return ctx.
 			Status(200).
 			JSON(fiber.Map{
-				"id": createdTransaction.ID,
-				"name": createdTransaction.Name,
-				"type": createdTransaction.Type,
+				"id":    createdTransaction.ID,
+				"name":  createdTransaction.Name,
+				"type":  createdTransaction.Type,
 				"value": createdTransaction.Value,
 			})
 	})

@@ -1,8 +1,8 @@
 package database
 
 import (
-	transactionModels "fiber_api/transaction/models"
-	userModels "fiber_api/user/models"
+	transactions "fiber_api/transaction/entities"
+	users "fiber_api/user/entities"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -19,8 +19,8 @@ func New() *gorm.DB {
 		panic(err)
 	}
 
-	db.AutoMigrate(&transactionModels.Transaction{})
-	db.AutoMigrate(&userModels.User{})
+	db.AutoMigrate(&transactions.Transaction{})
+	db.AutoMigrate(&users.User{})
 
 	return db
 }
